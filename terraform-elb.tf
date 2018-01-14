@@ -1,7 +1,9 @@
 # Create a new load balancer
 
  provider "aws" {
-          region = "ap-southeast-1"
+	   access_key = "your-access-key}"
+           secret_key = "your-secret-key"	 
+           region = "ap-southeast-1"
  }
 
  resource "aws_instance" "test-elb01" {
