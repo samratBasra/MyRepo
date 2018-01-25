@@ -1,0 +1,41 @@
+---
+
+- hosts: x.x.x.x
+ 
+  tasks: 
+    
+   - name: ensure apt cache is up to date
+     apt: update_cache=yes
+
+   - name: add postgresql apt key
+     apt_key:
+       url: https://www.postgresql.org/media/keys/ACCC4CF8.asc
+       state: present
+
+ 
+   - name: apt repo for postgrsql
+     shell: sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt/ `lsb_release -cs`-pgdg main" >> /etc/apt/sources.list.d/pgdg.list'
+
+   - name: Ensure bash, OpenSSl, and libssl are the latest versions
+     apt: name={{ item }} update_cache=true state=latest
+     with_items:
+       - bash
+       - openssl
+       - libssl-dev
+       - libssl-doc
+     tags: packages
+
+   - name: Install PostgreSQL
+     apt: name={{ item }} update_cache=true state=installed
+     with_items:
+       - postgresql-10
+       - postgresql-contrib
+       - libpq-dev
+       - python-psycopg2
+     tags: packages
+
+   - name: initilize the pg databse
+     shell: pg_createcluster 10 main --start
+   
+   - name: Ensure the PostgreSQL service is running
+     service: name=postgresql state=started enabled=yes
