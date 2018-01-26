@@ -1,0 +1,64 @@
+---
+
+- hosts: x.x.x.x
+
+  tasks:
+
+   - name: Install add-apt-repostory
+     become: yes
+     apt: name=software-properties-common state=latest
+
+   - name: Add Oracle Java Repository
+     become: yes
+     apt_repository: repo='ppa:webupd8team/java'
+
+   - name: Accept Java 8 License
+     become: yes
+     debconf: name='oracle-java8-installer' question='shared/accepted-oracle-license-v1-1' value='true' vtype='select'
+
+   - name: Install Oracle Java 8
+     become: yes
+     apt: name={{item}} state=latest
+     with_items:
+      - oracle-java8-installer
+      - ca-certificates
+      - oracle-java8-set-default
+
+   - name: insall unzip
+     apt:
+      package: unzip   
+   
+   
+   - name: Download steam tar file
+     get_url:
+       url: https://s3.amazonaws.com/steam-release/steam-1.1.6-linux-amd64.tar.gz 
+       dest: /opt/
+
+   - name: extract unarchive
+     unarchive: src=/opt/steam-1.1.6-linux-amd64.tar.gz dest=/opt/
+       remote_src=yes
+  
+   - name: download and  extract zip file
+     unarchive:
+      src: http://h2o-release.s3.amazonaws.com/h2o/rel-wheeler/3/h2o-3.16.0.3.zip
+      dest: /opt/
+      remote_src: yes      
+
+   - name: execute the war file with java
+     shell: nohup java -jar /opt/steam-1.1.6-linux-amd64/var/master/assets/jetty-runner.jar /opt/steam-1.1.6-linux-amd64/var/master/assets/ROOT.war &
+
+
+   - name: install git
+     apt: 
+      package: git
+      state: installed
+
+   - git:  
+       repo: https://github.com/h2oai/steam
+       dest: /opt/h2o
+   
+   - name: run gradlew build command
+     command: chdir=/opt/h2o/prediction-service-builder  /opt/h2o/prediction-service-builder/gradlew build 
+ 
+   - name: run gradle jettyRunWar command
+     shell:  chdir=/opt/h2o/prediction-service-builder  nohup /opt/h2o/prediction-service-builder/gradlew jettyRunWar &
