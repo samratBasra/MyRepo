@@ -1,0 +1,106 @@
+---
+
+- hosts: 10.9.11.221
+
+  tasks:
+
+   - name: Install yum-repostory
+     become: yes
+     yum: name=java state=latest
+
+   - name: install java package
+     yum:
+         name: java
+         pkg: java-1.8.0-openjdk
+         state: present
+
+   - name: insall unzip
+     yum:
+      name: install unzip package
+      pkg: unzip
+
+      #- name: download remi-mysql repo
+      #get_url: url=http://rpms.famillecollet.com/enterprise/6/test/x86_64/compat-mysql55-5.5.11-1.el6.remi.x86_64.rpm dest=/tmp/compat-mysql5.5.11.remi.rpm
+      #tags: mysql
+
+   - name: install remi-mysql repo
+     shell: /bin/rpm -Uvh /tmp/compat-mysql5.5.11.remi.rpm
+     register: remi_mysql_repo_result
+     failed_when: "'conflict' in remi_mysql_repo_result.stderr"
+     tags: mysql
+
+   - name: install MySQL
+     yum: name={{item}} state=latest
+     with_items:
+      - mysql57
+      - mysql57-server
+     tags:
+      - mysql
+      - mysql-service
+
+   - name: run MySQL
+     service: name=mysqld state=started enabled=yes
+     tags:
+      - mysql
+      - mysql-service
+
+      # - name: Install MySQL 5.7 repo
+      #yum: name=http://dev.mysql.com/get/mysql57-community-release-el7-8.noarch.rpm state=present
+
+      #- name: Install MySQL 5.7
+      #yum: pkg={{ item }}
+      #with_items:
+      #- mysql-community-server
+      #- mysql-community-client
+      #- MySQL-python
+
+      #   - name: Start the MySQL service
+      #service: name=mysqld state=started enabled=true
+
+   - name: install required python MySQLdb lib to create databases and users
+     yum: name={{item}} state=present
+     with_items:
+       - gcc-c++
+       - MySQL-python27
+     become: yes
+     tags:
+       - mysql
+       - mysql-dependencies
+
+       # - name: create db user
+       #mysql_user: name=sonar password=sonar  state=present
+       #tags:
+       #- mysql
+       #- mysql-user
+
+         #- name: Install MySQL-Python  module
+         #pip: name=MySQL-python
+
+   - name: create sonar user
+     mysql_user:
+        name: sonar
+        password: sonar
+        priv: '*.*:ALL'
+        state: present
+
+   - name: create sonar database
+     mysql_db:
+         name: sonar
+         state: present
+
+   - name: add sonar repo
+     yum_repository:
+         name: sonarqube
+         description: add sonarqube repo
+         baseurl: http://downloads.sourceforge.net/project/sonar-pkg/rpm
+         gpgcheck: no
+
+   - name: install sonarqube
+     package:
+        name: sonar
+        state: latest
+
+   - name: restart sonarqube
+     service:
+        name: sonar
+        state: restarted
