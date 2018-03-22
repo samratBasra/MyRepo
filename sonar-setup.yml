@@ -1,6 +1,6 @@
 ---
 
-- hosts: 10.9.11.221
+- hosts: x.x.x.x
 
   tasks:
 
