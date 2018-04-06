@@ -1,0 +1,17 @@
+---
+- hosts: x.x.x.x
+
+  tasks:
+    
+    - name: nodejs - add repository key
+      #      shell: ' curl --silent --location https://rpm.nodesource.com/setup_6.x | sudo bash -- ' 
+      shell: 'curl -sL https://rpm.nodesource.com/setup_6.x | bash -'
+    - name: nodejs - install
+      yum:
+        name: node
+        #pkg: nodejs-9.4.0
+        pkg: nodejs-6.3.1
+        state: present
+      
+    - name: install js-express with node
+      command: 'npm install express'
