@@ -1,5 +1,6 @@
 #!/bin/bash
 #Script to create AMI of server on daily basis and deleting AMI older than n no of days
+#new comment
 
 echo -e "----------------------------------\n   `date`   \n----------------------------------"
 
