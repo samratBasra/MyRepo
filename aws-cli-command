@@ -1,0 +1,2 @@
+#to find the public ip or instance ID of ec2 instance where tag = "some-tag"
+aws ec2 describe-instances --filters Name=tag:Name,Values="leadgen-aggregation-*" --profile FREE_AGGREGATION_2 --region us-west-1 --query 'Reservations[*].Instances[*].[InstanceId, PublicIpAddress, InstanceType]' --output=table > /tmp/IP-us-west-1.TXT
