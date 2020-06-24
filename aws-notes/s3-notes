@@ -1,1 +1,22 @@
 s3 document for reference
+s3 storage classes: 
+    1. standard (by default and costliest option) 11 9's durable ,, for critical and frequent data.
+    2. standard infrequent access(IA): same replication. durability and availbilty but cheaper option.
+       use case: archive data and infrequent data
+       downside: 1. minimum size should be 128kb.
+                 2. keep the object for 30 as standard. then change it to standard IA. 
+                 3. retrival fee when accessing data from bucket.
+    3. intelligent tiering: it save the data in two format.
+       1. infrequent access.
+       2. frequent access. 
+     so what here is, when we upload any data, it is in frequent access catagory and if that data is not accessed for 30 days then it is moved to infrequent access
+     storage. 
+     
+     4. one-zone IA: the data is stored and replicated in only AZ. 
+        downside: less redundent, less durable less available and if AZ goes down, the data will be loss. and cheaper option. 
+        use case: it is used for backup of backup. 
+     5. glacier: cheapest option. 
+        use case: used for archiving data. like compliance data which is used less frequently. 
+        downside:  1. retrival fee
+                   2. retrival time is high
+     6. glacier deep archive: used very less. 
