@@ -9,3 +9,4 @@ routing policy:
       3. latency based.
       4. geo location
       5. failover
+      6. multivalue answer. 
