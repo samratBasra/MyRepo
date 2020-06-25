@@ -1,1 +1,5 @@
 route 53 notes
+Hosted Zone: A container which container all the routing information for your domain and sub domain. 
+type: 1. NS: name server, thi is the actuall domain name server. 
+      2. SOA: Start of authority. points toward the primary name server (mainly first entry in route 53)
+        it contain the entire copy of read and write copy of hosted zone database.
