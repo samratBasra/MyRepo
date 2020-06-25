@@ -1,0 +1,1 @@
+this is the service used for run command, run ansible playbook on the ec2 instance without loggin into server.
