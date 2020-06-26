@@ -1,0 +1,6 @@
+data encrption occurs at 3 level
+   1. data at rest on that volume.
+   2. snapshot of encypted volme is also encypted. 
+   
+solid state disk (SSD) costly option, faster, high performance.
+HDD (HARD DISK Drive) Traditional hard disk, slower and cheaper option
