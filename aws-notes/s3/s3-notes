@@ -22,6 +22,9 @@ s3 storage classes:
      6. glacier deep archive: used very less. 
 
 There are three tyep of encrption on s3 bucket and object.
-     1. transit encrypt
+     1. transit encrypt (encryption is doen at the netwrok trasnsition.) Using SSL/TLS 
      2. server side encryption
-     3. client side encryption.
+         SSE-S3 (S3 managed key)
+         SSE-KMS (AWS managed using KMS)
+         SSE-C (customer managed key)
+     3. client side encryption: encypt the files locally.
