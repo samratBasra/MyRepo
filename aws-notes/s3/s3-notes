@@ -20,3 +20,8 @@ s3 storage classes:
         downside:  1. retrival fee
                    2. retrival time is high
      6. glacier deep archive: used very less. 
+
+There are three tyep of encrption on s3 bucket and object.
+     1. transit encrypt
+     2. server side encryption
+     3. client side encryption.
