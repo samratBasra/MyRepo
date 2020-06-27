@@ -1,1 +1,3 @@
 #rds notes
+RDS multi-AZ is not saclling solution, its disaster recovery solution
+read relica is scalling solution.
