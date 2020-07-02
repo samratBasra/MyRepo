@@ -28,3 +28,11 @@ There are three tyep of encrption on s3 bucket and object.
          SSE-KMS (AWS managed using KMS)
          SSE-C (customer managed key)
      3. client side encryption: encypt the files locally.
+
+There are two type of policy:
+     1. resource based policy
+        a.access control list: provide read/write access on objects and buckets to the aws accounts and predefined group
+        b. bucket policy: rovide read/write access on objects and buckets to the aws accounts and iam users.
+        
+     2. user based policy. applied directly to user, gourp or roles using aws iam. 
+     
