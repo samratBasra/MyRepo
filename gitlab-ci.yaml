@@ -1,0 +1,132 @@
+#!/bin/bash
+set -x
+if [ "$SERVER_ADDR_1" != "" ]; then
+  echo "Deploying instance 1"
+  sshpass -p $SSH_PASSWORD ssh -o StrictHostKeyChecking=no -tt $SSH_USERNAME@$SERVER_ADDR_1 "docker pull $DOCKER_IMAGE && docker stop $CONTAINER_NAME && docker rm $CONTAINER_NAME && docker run --network=bibrainadmin_bibrain --log-driver=splunk  --log-opt splunk-url=$SPLUNK_URL --log-opt splunk-token=$SPLUNK_TOKEN --log-opt splunk-insecureskipverify='true' --log-opt splunk-format=raw --log-opt splunk-index=bibrain --log-opt splunk-sourcetype='mfe-campaign-manager' --log-opt tag= ""  -e 'NEW_RELIC_LICENSE_KEY=$NEW_RELIC_LICENSE_KEY' -e 'NEW_RELIC_APP_NAME=$NEW_RELIC_APP_NAME' -e 'NEW_RELIC_ENABLED=$NEW_RELIC_ENABLED' -e 'MQ_URL=$MQ_URL' -e 'MQ_USER=$MQ_USER' -e 'MQ_PASS=$MQ_PASS' -p 80:8080  -d  --name $CONTAINER_NAME $DOCKER_IMAGE && exit"
+  echo "Instance 1 deployed successfully"
+fi
+
+if [ "$SERVER_ADDR_2" != "" ]; then
+  echo "Deploying instance 2"
+  sshpass -p $SSH_PASSWORD ssh -o StrictHostKeyChecking=no -tt $SSH_USERNAME@$SERVER_ADDR_2 "docker pull $DOCKER_IMAGE && docker stop $CONTAINER_NAME && docker rm $CONTAINER_NAME && docker run --network=bibrainadmin_bibrain --log-driver=splunk  --log-opt splunk-url=$SPLUNK_URL --log-opt splunk-token=$SPLUNK_TOKEN --log-opt splunk-insecureskipverify='true' --log-opt splunk-format=raw --log-opt splunk-index=bibrain --log-opt splunk-sourcetype='mfe-campaign-manager' --log-opt tag= "" -e 'PORT=3000' -e 'NEW_RELIC_LICENSE_KEY=$NEW_RELIC_LICENSE_KEY' -e 'NEW_RELIC_APP_NAME=$NEW_RELIC_APP_NAME' -e 'NEW_RELIC_ENABLED=$NEW_RELIC_ENABLED' -e 'MQ_URL=$MQ_URL' -e 'MQ_USER=$MQ_USER' -e 'MQ_PASS=$MQ_PASS'  -d  --name $CONTAINER_NAME $DOCKER_IMAGE && exit"
+  echo "Instance 2 deployed successfully"
+fi
+
+
+
+image: artifactory.mrgreen.tech/docker/node:11
+
+variables:
+  DOCKER_IMAGE: $DOCKER_REGISTRY:$CI_COMMIT_REF_SLUG
+  CONTAINER_NAME: bibrainadmin_mfe_campaign_manager_1
+
+stages:
+  - install_test
+  - build
+  - release
+  - deploy
+
+install:
+  stage: install_test
+  tags: [mrg-docker-deploy-dev]
+  artifacts:
+    paths:
+      - node_modules
+  script:
+    - npm install
+    - npm run unit-tests
+
+.build: &build
+  stage: build
+  tags: [mrg-docker-deploy-dev]
+  before_script:
+    - cp $json_env src/config/environment.json
+  needs:
+    - job: install
+      artifacts: true
+  script:
+    - npm run build
+
+build-dev:
+  <<: *build
+  environment: development
+  except:
+    - master
+
+build-prod:
+  <<: *build
+  environment: production
+  only:
+    - master
+    - develop
+    - /^release/.*$/
+
+.release: &release
+  stage: release
+  variables:
+    DOCKER_HOST: tcp://dockerhost:2375/
+    # Use the overlayfs driver for improved performance:
+    DOCKER_DRIVER: overlay2
+    DOCKER_TLS_CERTDIR: ""
+  tags: [mrg-docker-deploy-dev]
+  image: docker:git
+  before_script:
+    - cp $json_env src/config/environment.json
+  services:
+    - name: docker:dind
+      alias: dockerhost
+  script:
+    - docker build  -t $DOCKER_IMAGE .
+    - docker push $DOCKER_IMAGE
+
+release-dev:
+  <<: *release
+  environment: development
+  needs:
+    - job: build-dev
+      artifacts: false
+  except:
+    - master
+
+release-prod:
+  <<: *release
+  environment: production
+  needs:
+    - job: build-prod
+      artifacts: false
+  only:
+    - master
+    - develop
+    - /^release/.*$/
+
+# Deployment template
+.deploy: &deploy
+  stage: deploy
+  tags: [ mrg-docker-deploy-dev ]
+  before_script:
+    - apt-get update
+    - apt-get install sshpass
+    - apt-get install openssh-client
+  script:
+    - chmod +x ./scripts/deploy.sh
+    - ./scripts/deploy.sh
+
+deploy-staging:
+  environment: development
+  <<: *deploy
+  needs:
+    - job: release-dev
+      artifacts: false
+  except:
+    - master
+
+deploy-prod:
+  environment: production
+  when: manual
+  <<: *deploy
+  needs:
+    - job: release-prod
+      artifacts: false
+  only:
+    - master
+
