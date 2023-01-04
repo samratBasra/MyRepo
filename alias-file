@@ -1,0 +1,8 @@
+alias kg='kubectl get'
+alias k='kubectl'
+alias kd='kubectl describe'
+alias kc='kubectl create'
+alias ke='kubectl exec'
+#to change the namespace, install kubens and run kubens <namespace>
+alias kns='kubens'
+#install kubectx to change the K8S cluster
