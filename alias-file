@@ -6,3 +6,5 @@ alias ke='kubectl exec'
 #to change the namespace, install kubens and run kubens <namespace>
 alias kns='kubens'
 #install kubectx to change the K8S cluster
+
+#install k9s for visual k8s troubleshooting
